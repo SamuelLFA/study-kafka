@@ -7,17 +7,28 @@ import org.apache.kafka.common.serialization.StringDeserializer
 import java.io.Closeable
 import java.time.Duration
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.reflect.KFunction1
 
-class KafkaService (
-    private val groupId: String,
-    private val topic: String,
-    private val parse: KFunction1<ConsumerRecord<String, String>, Unit>
-) : Closeable {
-    private val consumer: KafkaConsumer<String, String> = KafkaConsumer<String, String>(properties())
+class KafkaService : Closeable {
+    private var groupId: String
+    private var parse: KFunction1<ConsumerRecord<String, String>, Unit>
+    private var consumer: KafkaConsumer<String, String>
+
+    constructor(groupId: String, topic: String, parse: KFunction1<ConsumerRecord<String, String>, Unit>) {
+        this.groupId = groupId
+        this.parse = parse
+        this.consumer = KafkaConsumer<String, String>(properties())
+        consumer.subscribe(listOf(topic))
+    }
+    constructor(groupId: String, topic: Pattern, parse: KFunction1<ConsumerRecord<String, String>, Unit>) {
+        this.groupId = groupId
+        this.parse = parse
+        this.consumer = KafkaConsumer<String, String>(properties())
+        consumer.subscribe(topic)
+    }
 
     fun run() {
-        consumer.subscribe(listOf(topic))
         while(true) {
             val records = consumer.poll(Duration.ofMillis(100))
             if (!records.isEmpty) {
