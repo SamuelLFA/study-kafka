@@ -10,22 +10,22 @@ import java.util.*
 import java.util.regex.Pattern
 import kotlin.reflect.KFunction1
 
-class KafkaService : Closeable {
-    private var groupId: String
-    private var parse: KFunction1<ConsumerRecord<String, String>, Unit>
-    private var consumer: KafkaConsumer<String, String>
+class KafkaService<T> : Closeable {
+    private var parse: KFunction1<ConsumerRecord<String, T>, Unit>
+    private var consumer: KafkaConsumer<String, T>
 
-    constructor(groupId: String, topic: String, parse: KFunction1<ConsumerRecord<String, String>, Unit>) {
-        this.groupId = groupId
-        this.parse = parse
-        this.consumer = KafkaConsumer<String, String>(properties())
+    constructor(groupId: String, topic: String, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>)
+            : this(groupId, parse, type) {
         consumer.subscribe(listOf(topic))
     }
-    constructor(groupId: String, topic: Pattern, parse: KFunction1<ConsumerRecord<String, String>, Unit>) {
-        this.groupId = groupId
-        this.parse = parse
-        this.consumer = KafkaConsumer<String, String>(properties())
+    constructor(groupId: String, topic: Pattern, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>)
+            : this(groupId, parse, type) {
         consumer.subscribe(topic)
+    }
+
+    private constructor(groupId: String, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>) {
+        this.parse = parse
+        this.consumer = KafkaConsumer<String, T>(properties(groupId, type))
     }
 
     fun run() {
@@ -40,14 +40,16 @@ class KafkaService : Closeable {
         }
     }
 
-    private fun properties(maxPollRecordsConfig: String = "1"): Properties {
+    private fun properties(groupId: String, type: Class<T>, maxPollRecordsConfig: String = "1"): Properties {
         val properties = Properties()
         properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092")
         properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
-        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
+        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer::class.java.name)
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId)
         properties.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString())
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecordsConfig)
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
+        properties.setProperty(GsonDeserializer.TYPE_CONFIG, type.name)
         return properties
     }
 

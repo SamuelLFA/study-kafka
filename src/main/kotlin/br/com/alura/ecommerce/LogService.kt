@@ -8,7 +8,8 @@ fun main() {
     val consumer = KafkaService(
         LogService::class.java.simpleName,
         Pattern.compile("ecommerce.*"),
-        logService::parse
+        logService::parse,
+        String::class.java
     )
     consumer.run()
 }

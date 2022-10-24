@@ -7,13 +7,14 @@ fun main() {
     val consumer = KafkaService(
         FraudDetectorService::class.java.simpleName,
         "ecommerce.new.order",
-        fraudDetectorService::parse
+        fraudDetectorService::parse,
+        Order::class.java
     )
     consumer.use { consumer.run() }
 }
 
 class FraudDetectorService {
-    fun parse(record: ConsumerRecord<String, String>) {
+    fun parse(record: ConsumerRecord<String, Order>) {
         println("-------------------------------")
         println("Processing new order, checking for fraud")
         println(record.key())

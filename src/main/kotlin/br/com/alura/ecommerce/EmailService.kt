@@ -6,13 +6,15 @@ fun main() {
     val emailService = EmailService()
     val kafkaService = KafkaService(
         EmailService::class.java.simpleName,
-        "ecommerce.send.email", emailService::parse
+        "ecommerce.send.email",
+        emailService::parse,
+        Email::class.java
     )
     kafkaService.use { kafkaService.run() }
 }
 
 class EmailService {
-    fun parse(record: ConsumerRecord<String, String>) {
+    fun parse(record: ConsumerRecord<String, Email>) {
         println("-------------------------------")
         println("Sending email")
         println(record.key())
