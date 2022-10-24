@@ -8,7 +8,8 @@ fun main() {
         FraudDetectorService::class.java.simpleName,
         "ecommerce.new.order",
         fraudDetectorService::parse,
-        Order::class.java
+        Order::class.java,
+        emptyMap(),
     )
     consumer.use { consumer.run() }
 }

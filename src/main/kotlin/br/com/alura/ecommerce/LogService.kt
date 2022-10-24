@@ -1,6 +1,8 @@
 package br.com.alura.ecommerce
 
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.apache.kafka.common.serialization.StringDeserializer
 import java.util.regex.Pattern
 
 fun main() {
@@ -9,7 +11,8 @@ fun main() {
         LogService::class.java.simpleName,
         Pattern.compile("ecommerce.*"),
         logService::parse,
-        String::class.java
+        String::class.java,
+        mapOf(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java.name)
     )
     consumer.run()
 }

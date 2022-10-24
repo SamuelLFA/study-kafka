@@ -14,18 +14,18 @@ class KafkaService<T> : Closeable {
     private var parse: KFunction1<ConsumerRecord<String, T>, Unit>
     private var consumer: KafkaConsumer<String, T>
 
-    constructor(groupId: String, topic: String, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>)
-            : this(groupId, parse, type) {
+    constructor(groupId: String, topic: String, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>, properties: Map<String, String>)
+            : this(groupId, parse, type, properties) {
         consumer.subscribe(listOf(topic))
     }
-    constructor(groupId: String, topic: Pattern, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>)
-            : this(groupId, parse, type) {
+    constructor(groupId: String, topic: Pattern, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>, properties: Map<String, String>)
+            : this(groupId, parse, type, properties) {
         consumer.subscribe(topic)
     }
 
-    private constructor(groupId: String, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>) {
+    private constructor(groupId: String, parse: KFunction1<ConsumerRecord<String, T>, Unit>, type: Class<T>, properties: Map<String, String>) {
         this.parse = parse
-        this.consumer = KafkaConsumer<String, T>(properties(groupId, type))
+        this.consumer = KafkaConsumer<String, T>(getProperties(groupId, type, properties))
     }
 
     fun run() {
@@ -40,7 +40,7 @@ class KafkaService<T> : Closeable {
         }
     }
 
-    private fun properties(groupId: String, type: Class<T>, maxPollRecordsConfig: String = "1"): Properties {
+    private fun getProperties(groupId: String, type: Class<T>, overrideProperties: Map<String, String>, maxPollRecordsConfig: String = "1"): Properties {
         val properties = Properties()
         properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092")
         properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
@@ -50,6 +50,7 @@ class KafkaService<T> : Closeable {
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecordsConfig)
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
         properties.setProperty(GsonDeserializer.TYPE_CONFIG, type.name)
+        properties.putAll(overrideProperties)
         return properties
     }
 

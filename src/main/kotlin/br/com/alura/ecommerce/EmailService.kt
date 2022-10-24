@@ -8,7 +8,8 @@ fun main() {
         EmailService::class.java.simpleName,
         "ecommerce.send.email",
         emailService::parse,
-        Email::class.java
+        Email::class.java,
+        emptyMap(),
     )
     kafkaService.use { kafkaService.run() }
 }
