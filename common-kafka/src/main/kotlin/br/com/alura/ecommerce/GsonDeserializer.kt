@@ -2,7 +2,6 @@ package br.com.alura.ecommerce
 
 import com.google.gson.GsonBuilder
 import org.apache.kafka.common.serialization.Deserializer
-import org.apache.kafka.common.serialization.Serializer
 
 class GsonDeserializer<T> : Deserializer<T> {
     private lateinit var type: Class<T>
