@@ -15,6 +15,7 @@ fun main() {
 }
 
 class FraudDetectorService {
+    private val orderDispatcher: KafkaDispatcher<Order> = KafkaDispatcher()
     fun parse(record: ConsumerRecord<String, Order>) {
         println("-------------------------------")
         println("Processing new order, checking for fraud")
@@ -23,6 +24,13 @@ class FraudDetectorService {
         println(record.partition())
         println(record.offset())
         Thread.sleep(5000)
-        println("Order processed")
+        val order = record.value()
+        if (order.isFraud()) {
+            orderDispatcher.send("ecommerce.order.rejected", order.userId, order)
+            println("Order is a fraud: $order")
+        } else {
+            orderDispatcher.send("ecommerce.order.approved", order.userId, order)
+            println("Approved: $order")
+        }
     }
 }

@@ -6,7 +6,7 @@ import java.util.UUID
 fun main() {
     KafkaDispatcher<Order>().use { orderDispatcher ->
         KafkaDispatcher<Email>().use { emailDispatcher ->
-            for (i in 1..100) {
+            for (i in 1..10) {
                 val userId = UUID.randomUUID().toString()
                 val orderId = UUID.randomUUID().toString()
                 val amount = BigDecimal(Math.random() * 5000 + 1)

@@ -1,4 +1,4 @@
-package br.com.alura.ecommerce
+package br.com.ecommerce.alura
 
 import java.math.BigDecimal
 
@@ -6,7 +6,5 @@ data class Order (
     val userId: String,
     val orderId: String,
     val amount: BigDecimal,
-) {
-    fun isFraud() = this.amount >= BigDecimal("4500")
-}
-
+    val email: String?,
+)
