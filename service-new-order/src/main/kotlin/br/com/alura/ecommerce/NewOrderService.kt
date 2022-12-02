@@ -7,13 +7,15 @@ fun main() {
     KafkaDispatcher<Order>().use { orderDispatcher ->
         KafkaDispatcher<Email>().use { emailDispatcher ->
             for (i in 1..10) {
-                val userId = UUID.randomUUID().toString()
                 val orderId = UUID.randomUUID().toString()
                 val amount = BigDecimal(Math.random() * 5000 + 1)
-                val order = Order(userId, orderId, amount)
-                orderDispatcher.send("ecommerce.new.order", userId, order)
-                val email = Email("","Thank you for your order! We are processing your order!")
-                emailDispatcher.send("ecommerce.send.email", userId, email)
+                val email = "${Math.random()}@gmail.com"
+
+                val order = Order(orderId, amount, email)
+                orderDispatcher.send("ecommerce.new.order", email, order)
+
+                val emailCode = Email("","Thank you for your order! We are processing your order!")
+                emailDispatcher.send("ecommerce.send.email", email, emailCode)
             }
         }
     }

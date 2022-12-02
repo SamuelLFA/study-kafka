@@ -26,10 +26,10 @@ class FraudDetectorService {
         Thread.sleep(5000)
         val order = record.value()
         if (order.isFraud()) {
-            orderDispatcher.send("ecommerce.order.rejected", order.userId, order)
+            orderDispatcher.send("ecommerce.order.rejected", order.email, order)
             println("Order is a fraud: $order")
         } else {
-            orderDispatcher.send("ecommerce.order.approved", order.userId, order)
+            orderDispatcher.send("ecommerce.order.approved", order.email, order)
             println("Approved: $order")
         }
     }

@@ -1,10 +1,11 @@
 package br.com.ecommerce.alura
 
-import br.com.alura.ecommerce.KafkaDispatcher
 import br.com.alura.ecommerce.KafkaService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.SQLException
+import java.util.*
 
 class CreateUserService {
     private var connection: Connection
@@ -12,10 +13,17 @@ class CreateUserService {
     init {
         val url = "jdbc:sqlite:target/users_database.db"
         this.connection = DriverManager.getConnection(url)
-        connection.createStatement().execute("create table Users (" +
-                "uuid varchar(200) primary key," +
-                "email varchar(200)" +
-                ")")
+        try {
+            connection.createStatement().execute("""
+                create table Users (
+                    uuid varchar(200) primary key,
+                    email varchar(200)
+                )
+            """)
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        }
+
     }
 
     fun parse(record: ConsumerRecord<String, Order>) {
@@ -28,21 +36,25 @@ class CreateUserService {
         }
     }
 
-    private fun insertNewUser(email: String?) {
-        val insert = connection.prepareStatement("insert into Users (uuid, email)" +
-                "values (?, ?)")
-        insert.setString(1, "uuid")
-        insert.setString(2, "email")
+    private fun insertNewUser(email: String) {
+        val insert = connection.prepareStatement("""
+            insert into Users (uuid, email)
+            values (?, ?)
+        """)
+        insert.setString(1, UUID.randomUUID().toString())
+        insert.setString(2, email)
         insert.execute()
-        println("Usuario inserido $email")
+        println("User created: $email")
     }
 
-    private fun isNewUser(email: String?): Boolean {
-        val exists = connection.prepareStatement("select uuid from Users" +
-                "where email = ? limit 1")
+    private fun isNewUser(email: String): Boolean {
+        val exists = connection.prepareStatement("""
+            select uuid from Users
+            where email = ? limit 1
+        """)
         exists.setString(1, email)
         val results = exists.executeQuery()
-        return results.next()
+        return !results.next()
     }
 }
 

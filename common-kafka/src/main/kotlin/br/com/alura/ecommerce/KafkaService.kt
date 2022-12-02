@@ -32,7 +32,6 @@ class KafkaService<T> : Closeable {
         while(true) {
             val records = consumer.poll(Duration.ofMillis(100))
             if (!records.isEmpty) {
-                println("Found ${records.count()}")
                 records.forEach{record ->
                     parse(record)
                 }
