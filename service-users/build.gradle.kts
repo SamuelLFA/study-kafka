@@ -1,0 +1,21 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+plugins {
+    kotlin("jvm") version "1.7.10"
+}
+
+dependencies {
+    implementation(project(":common-kafka"))
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
+    implementation("org.xerial:sqlite-jdbc:3.39.3.0")
+    implementation("org.apache.kafka:kafka-clients:3.3.1")
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
