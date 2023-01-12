@@ -1,6 +1,29 @@
 package br.com.alura.ecommerce
 
 import org.apache.kafka.clients.consumer.ConsumerRecord
+class FraudDetectorService {
+    private val kafkaDispatcher = KafkaDispatcher<Order>()
+
+    fun parse(record: ConsumerRecord<String, Order>) {
+        println("-------------------------------")
+        println("Processing new order, checking for fraud")
+        println("Key: ${record.key()}")
+        println("Value: ${record.value()}")
+        println("Partition: ${record.partition()}")
+        println("Offset: ${record.offset()}")
+
+        val order = record.value()
+        Thread.sleep(5000)
+
+        if (order.isFraud()) {
+            kafkaDispatcher.send("ecommerce.order.rejected", order.email, order)
+            println("Order is a fraud: $order")
+        } else {
+            kafkaDispatcher.send("ecommerce.order.approved", order.email, order)
+            println("Approved: $order")
+        }
+    }
+}
 
 fun main() {
     val fraudDetectorService = FraudDetectorService()
@@ -9,28 +32,7 @@ fun main() {
         "ecommerce.new.order",
         fraudDetectorService::parse,
         Order::class.java,
-        emptyMap(),
+        emptyMap()
     )
     consumer.use { consumer.run() }
-}
-
-class FraudDetectorService {
-    private val orderDispatcher: KafkaDispatcher<Order> = KafkaDispatcher()
-    fun parse(record: ConsumerRecord<String, Order>) {
-        println("-------------------------------")
-        println("Processing new order, checking for fraud")
-        println(record.key())
-        println(record.value())
-        println(record.partition())
-        println(record.offset())
-        Thread.sleep(5000)
-        val order = record.value()
-        if (order.isFraud()) {
-            orderDispatcher.send("ecommerce.order.rejected", order.email, order)
-            println("Order is a fraud: $order")
-        } else {
-            orderDispatcher.send("ecommerce.order.approved", order.email, order)
-            println("Approved: $order")
-        }
-    }
 }

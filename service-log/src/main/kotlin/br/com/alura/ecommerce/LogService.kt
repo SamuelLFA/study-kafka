@@ -5,6 +5,17 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 import java.util.regex.Pattern
 
+class LogService {
+    fun parse(record: ConsumerRecord<String, String>) {
+        println("-------------------------------")
+        println("LOG")
+        println("Key: ${record.key()}")
+        println("Value: ${record.value()}")
+        println("Partition: ${record.partition()}")
+        println("Offset: ${record.offset()}")
+    }
+}
+
 fun main() {
     val logService = LogService()
     val consumer = KafkaService(
@@ -15,15 +26,4 @@ fun main() {
         mapOf(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to StringDeserializer::class.java.name)
     )
     consumer.run()
-}
-
-class LogService {
-    fun parse(record: ConsumerRecord<String, String>) {
-        println("-------------------------------")
-        println("LOG")
-        println(record.key())
-        println(record.value())
-        println(record.partition())
-        println(record.offset())
-    }
 }

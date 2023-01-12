@@ -8,28 +8,19 @@ import java.sql.SQLException
 import java.util.*
 
 class CreateUserService {
-    private var connection: Connection
+    private val connection: Connection
 
     init {
         val url = "jdbc:sqlite:target/users_database.db"
-        this.connection = DriverManager.getConnection(url)
-        try {
-            connection.createStatement().execute("""
-                create table Users (
-                    uuid varchar(200) primary key,
-                    email varchar(200)
-                )
-            """)
-        } catch (ex: SQLException) {
-            ex.printStackTrace()
-        }
-
+        connection = DriverManager.getConnection(url)
+        createTableIfNotExists()
     }
 
     fun parse(record: ConsumerRecord<String, Order>) {
         println("-------------------------------")
         println("Processing new order, checking for new user")
-        println(record.value())
+        println("Value: ${record.value()}")
+
         val order = record.value()
         if (isNewUser(order.email)) {
             insertNewUser(order.email)
@@ -55,6 +46,19 @@ class CreateUserService {
         exists.setString(1, email)
         val results = exists.executeQuery()
         return !results.next()
+    }
+
+    private fun createTableIfNotExists() {
+        try {
+            connection.createStatement().execute("""
+                create table Users (
+                    uuid varchar(200) primary key,
+                    email varchar(200)
+                )
+            """)
+        } catch (ex: SQLException) {
+            ex.printStackTrace()
+        }
     }
 }
 
