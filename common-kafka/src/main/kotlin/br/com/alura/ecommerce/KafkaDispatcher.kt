@@ -9,18 +9,18 @@ import java.io.Closeable
 import java.lang.Exception
 import java.util.*
 
-class KafkaDispatcher<T> : Closeable {
+class KafkaDispatcher<T : Any> : Closeable {
     private val producer = KafkaProducer<String, T>(properties())
 
     fun send(topic: String, key: String, value: T) {
         val record = ProducerRecord(topic, key, value)
-        val callback: (metadata: RecordMetadata, exception: Exception?) -> Unit = { data, ex ->
+        val callback: (metadata: RecordMetadata, exception: Exception?) -> Unit = { metadata, ex ->
             run {
                 if (ex != null) {
                     ex.printStackTrace()
                     return@run
                 }
-                println("${data.topic()} ::: ${data.partition()} / ${data.offset()} / ${data.timestamp()}")
+                println("${metadata.topic()} ::: ${metadata.partition()} / ${metadata.offset()} / ${metadata.timestamp()}")
             }
         }
         producer.send(record, callback).get()
@@ -28,9 +28,9 @@ class KafkaDispatcher<T> : Closeable {
 
     private fun properties(): Properties {
         val properties = Properties()
-        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092")
-        properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java.name)
-        properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GsonSerializer::class.java.name)
+        properties[ProducerConfig.BOOTSTRAP_SERVERS_CONFIG] = "127.0.0.1:9092"
+        properties[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
+        properties[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = GsonSerializer::class.java.name
         return properties
     }
 

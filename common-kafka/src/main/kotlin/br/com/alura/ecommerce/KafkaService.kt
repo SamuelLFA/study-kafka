@@ -32,7 +32,7 @@ class KafkaService<T> : Closeable {
         while(true) {
             val records = consumer.poll(Duration.ofMillis(100))
             if (!records.isEmpty) {
-                records.forEach{record ->
+                records.forEach { record ->
                     parse(record)
                 }
             }
@@ -41,14 +41,14 @@ class KafkaService<T> : Closeable {
 
     private fun getProperties(groupId: String, type: Class<T>, overrideProperties: Map<String, String>, maxPollRecordsConfig: String = "1"): Properties {
         val properties = Properties()
-        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092")
-        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
-        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer::class.java.name)
-        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId)
-        properties.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString())
-        properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, maxPollRecordsConfig)
-        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-        properties.setProperty(GsonDeserializer.TYPE_CONFIG, type.name)
+        properties[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = "127.0.0.1:9092"
+        properties[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java.name
+        properties[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = GsonDeserializer::class.java.name
+        properties[ConsumerConfig.GROUP_ID_CONFIG] = groupId
+        properties[ConsumerConfig.CLIENT_ID_CONFIG] = UUID.randomUUID().toString()
+        properties[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = maxPollRecordsConfig
+        properties[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
+        properties[GsonDeserializer.TYPE_CONFIG] = type.name
         properties.putAll(overrideProperties)
         return properties
     }
